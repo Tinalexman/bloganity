@@ -43,6 +43,7 @@ const Banner = () => {
     title: "Testing 123",
     date: new Date(),
     author: "Alabi Tanimowo",
+    _id: "ID",
   });
 
   return (

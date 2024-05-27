@@ -1,4 +1,5 @@
 export type tBlog = {
+  _id: string;
   content: string;
   title: string;
   date: Date;

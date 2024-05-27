@@ -37,9 +37,7 @@ const myColor: MantineColorsTuple = [
 ];
 
 const theme = createTheme({
-  colors: {
-    myColor,
-  },
+  colors: { primary: myColor },
 });
 
 export default function RootLayout({

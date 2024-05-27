@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Blog",
 };
 
-export default function BlogPage() {
-  return <Blog />;
+export default function BlogPage({ params } : any) {
+  const { id } = params;
+  return <Blog id={id} />;
 }
