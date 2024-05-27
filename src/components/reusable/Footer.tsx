@@ -11,7 +11,7 @@ const Footer = () => {
         </span>{" "}
         by{" "}
         <span className="font-bold underline cursor-pointer">
-          <a href="https://github.com/Tinalexman">Tinalexman</a>
+          <a href="https://github.com/Tinalexman/bloganity">Tinalexman</a>
         </span>
       </div>
       <div>
