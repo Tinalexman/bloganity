@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const BlogContainer: FC<iBlogProp> = ({ blog }) => {
   return (
-    <Link href={`/blogs/${blog._id}`} className="flex flex-col gap-3 ">
+    <Link href={`/blog/${blog._id}`} className="flex flex-col gap-3 ">
       <div className="bg-secondary-2 w-full h-[150px] rounded flex justify-center items-center">
         <h2 className="text-white text-2xl font-bold text-center">Blog Image</h2>
       </div>

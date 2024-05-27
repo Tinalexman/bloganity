@@ -16,8 +16,8 @@ const Blog: FC<{ id: string }> = ({ id }) => {
     date: new Date(),
     title: "",
   });
-  const [loading, setLoading] = useState<boolean>(true);
-  const [success, setSuccess] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(true);
 
   useEffect(() => {
     setBlog({
@@ -89,8 +89,22 @@ const Blog: FC<{ id: string }> = ({ id }) => {
       )}
 
       {loading && (
-        <div className="w-full h-[85vh] flex justify-center items-center">
-          <Loader size={"36px"} color="primary"/>
+        <div className="w-full h-[85vh] md:h-[87vh] flex justify-center items-center">
+          <Loader size={"36px"} color="primary" />
+        </div>
+      )}
+
+      {!success && (
+        <div className="w-full h-[85vh] md:h-[87vh] flex flex-col gap-2 justify-center items-center">
+          <h2 className="text-white text-2xl md:text-xl font-bold">
+            An error occurred. Please try again
+          </h2>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-primary w-[120px] md:w-full text-lg text-white font-medium rounded-full py-2 "
+          >
+            Refresh
+          </button>
         </div>
       )}
       <Footer />
