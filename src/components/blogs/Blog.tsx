@@ -27,6 +27,7 @@ const Blog: FC<{ id: string }> = ({ id }) => {
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [success, setSuccess] = useState<boolean>(false);
+  const [owner, setOwner] = useState<boolean>(false);
 
   const [opened, { open, close }] = useDisclosure(false);
 
@@ -37,6 +38,12 @@ const Blog: FC<{ id: string }> = ({ id }) => {
         setBlog(res.data.payload);
         setSuccess(true);
         setLoading(false);
+
+        let details = window.localStorage.getItem(bloganityKey);
+        if (details !== null) {
+          details = JSON.parse(details).name;
+          setOwner(res.data.payload.author === details);
+        }
       },
       (err) => {
         toast.error(
@@ -58,11 +65,11 @@ const Blog: FC<{ id: string }> = ({ id }) => {
       deleteBlog(
         blog._id,
         token,
-        (res : any) => {
+        (res: any) => {
           close();
           window.location.replace("/blogs");
         },
-        (err : any) => {
+        (err: any) => {
           toast.error("An error occurred while trying to delete the blog");
           setLoading(false);
           setSuccess(false);
@@ -73,8 +80,6 @@ const Blog: FC<{ id: string }> = ({ id }) => {
       toast.error("You need to be logged in to edit a blog");
       return;
     }
-
-    
   }
 
   return (
@@ -114,21 +119,23 @@ const Blog: FC<{ id: string }> = ({ id }) => {
             </div>
             <p className="text-white text-lg">{blog.content}</p>
 
-            <div className="flex md:flex-col gap-5 w-fit md:w-full my-10">
-              <Link
-                href={`/edit-blog/${blog._id}`}
-                className="bg-primary w-[150px] flex items-center justify-center  md:w-full h-[50px] rounded text-white font-medium"
-              >
-                Edit Blog
-              </Link>
+            {owner && (
+              <div className="flex md:flex-col gap-5 w-fit md:w-full my-10">
+                <Link
+                  href={`/edit-blog/${blog._id}`}
+                  className="bg-primary w-[150px] flex items-center justify-center  md:w-full h-[50px] rounded text-white font-medium"
+                >
+                  Edit Blog
+                </Link>
 
-              <button
-                onClick={open}
-                className="bg-secondary w-[150px] md:w-full h-[50px] rounded text-white font-medium"
-              >
-                Delete Blog?
-              </button>
-            </div>
+                <button
+                  onClick={open}
+                  className="bg-secondary w-[150px] md:w-full h-[50px] rounded text-white font-medium"
+                >
+                  Delete Blog?
+                </button>
+              </div>
+            )}
           </div>
         )}
 
