@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import Link from "next/link";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
@@ -7,8 +7,22 @@ import { IoMdClose } from "react-icons/io";
 import { Drawer } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
+import { bloganityKey } from "@/constants";
+import { MdLogout } from "react-icons/md";
+
 const Navbar = () => {
   const [opened, { open, close }] = useDisclosure(false);
+  const [loggedIn, setLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    let details: string | null = window.localStorage.getItem(bloganityKey);
+    setLoggedIn(details !== null);
+  }, []);
+
+  const logout = () => {
+    window.localStorage.removeItem(bloganityKey);
+    window.location.replace("/");
+  };
 
   return (
     <>
@@ -16,12 +30,17 @@ const Navbar = () => {
         <Link href={"/"} className="text-3xl md:text-xl font-bold text-primary">
           Bloganity
         </Link>
-        <Link
-          href={"/create-blog"}
-          className="bg-tertiary border-2 flex justify-center border-primary hover:bg-primary font-medium hover:font-bold text-primary hover:text-white text-xl md:hidden rounded-full py-2 w-[150px] shadow-custom-1 transition-all duration-300 ease-out"
-        >
-          Get Started
-        </Link>
+        <div className="w-fit flex gap-10 items-center">
+          <Link
+            href={!loggedIn ? "/auth" : "/create-blog"}
+            className="bg-tertiary border-2 flex justify-center border-primary hover:bg-primary font-medium hover:font-bold text-primary hover:text-white text-xl md:hidden rounded-full py-2 w-[150px] shadow-custom-1 transition-all duration-300 ease-out"
+          >
+            {!loggedIn ? "Get Started" : "Create A Blog"}
+          </Link>
+          {loggedIn && (
+            <MdLogout size={"32px"} className="text-primary md:hidden" onClick={logout} />
+          )}
+        </div>
         <HiOutlineMenuAlt3
           onClick={open}
           size={"26px"}
@@ -46,13 +65,22 @@ const Navbar = () => {
                 <IoMdClose size={"26px"} fill="#FFFFFF" onClick={close} />
               </div>
 
-              <div className="mt-20">
+              <div className="mt-20 flex flex-col gap-10">
                 <Link
-                  href={"/create-blog"}
+                  href={!loggedIn ? "/auth" : "/create-blog"}
                   className="bg-tertiary border-2 flex justify-center border-primary hover:bg-primary font-medium hover:font-bold text-primary hover:text-white text-xl rounded-full py-2 w-full shadow-custom-1 transition-all duration-300 ease-out"
                 >
-                  Get Started
+                  {!loggedIn ? "Get Started" : "Create A Blog"}
                 </Link>
+
+                {loggedIn && (
+                  <button
+                    className="flex justify-center font-medium bg-primary text-white text-xl rounded-full py-2 w-full shadow-custom-1 "
+                    onClick={logout}
+                  > 
+                  Logout
+                  </button>
+                )}
               </div>
             </div>
           </Drawer.Body>

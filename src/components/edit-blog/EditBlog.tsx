@@ -1,25 +1,41 @@
 "use client";
 
-import React, { useState, FC, useEffect} from "react";
+import React, { useState, FC, useEffect } from "react";
 import Navbar from "../reusable/Navbar";
 import Footer from "../reusable/Footer";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { bloganityKey } from "@/constants";
 
-const EditBlog:FC<{id: string}> = ({id}) => {
+import { useRouter } from "next/navigation";
+
+import { editBlog, getBlog } from "@/services/blogService";
+import { Loader } from "@mantine/core";
+
+const EditBlog: FC<{ id: string }> = ({ id }) => {
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [author, setAuthor] = useState<string>("");
+  const [blogID, setBlogID] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
-  function createBlog() {
+  const router = useRouter();
+
+  const onSuccess = (res: any) => {
+    toast.success("Yippee. Your blog has been updated");
+    setLoading(false);
+    router.back();
+  };
+
+  const onError = (error: any) => {
+    toast.error("An error occurred while updating your blog. Please try again");
+    setLoading(false);
+  };
+
+  function edit() {
     if (title.length === 0) {
       toast.error("You need to provide a title for your blog.");
-      return;
-    }
-
-    if (author.length === 0) {
-      toast.error("Won't you let us know who you are?");
       return;
     }
 
@@ -28,15 +44,54 @@ const EditBlog:FC<{id: string}> = ({id}) => {
       return;
     }
 
-    
+    let details = window.localStorage.getItem(bloganityKey);
+    if (details !== null) {
+      setLoading(true);
+
+      let token = JSON.parse(details).token;
+
+      editBlog(
+        {
+          content: content,
+          title: title,
+          _id: blogID
+        },
+        token,
+        onSuccess,
+        onError
+      );
+    } else {
+      toast.error("You need to be logged in to edit a blog");
+      return;
+    }
   }
 
   useEffect(() => {
+    let details: string | null = window.localStorage.getItem(bloganityKey);
+    if (details !== null) {
+      let detail = JSON.parse(details);
+      setAuthor(detail.name);
+    }
+  }, []);
+
+  useEffect(() => {
     // get the blog and set the props
-
-
-  }, [])
-
+    getBlog(
+      id,
+      (res) => {
+        setTitle(res.data.payload.title);
+        setContent(res.data.payload.content);
+        setBlogID(res.data.payload._id);
+        setLoading(false);
+      },
+      (err) => {
+        toast.error(
+          "An error occurred while getting the blog. Please try again."
+        );
+        setLoading(false);
+      }
+    );
+  }, []);
 
   return (
     <>
@@ -81,6 +136,7 @@ const EditBlog:FC<{id: string}> = ({id}) => {
               <input
                 type="text"
                 value={author}
+                readOnly={true}
                 placeholder="What's your name?"
                 className="w-full h-[50px] rounded border-2 border-tertiary-1 font-medium text-white  px-4 bg-tertiary"
                 onChange={(e) => setAuthor(e.target.value)}
@@ -96,10 +152,10 @@ const EditBlog:FC<{id: string}> = ({id}) => {
               />
             </div>
             <button
-              onClick={createBlog}
+              onClick={edit}
               className="bg-primary w-[150px] h-[50px] rounded text-white font-semibold shadow-custom-1"
             >
-              Update blog
+              {loading ? <Loader color="primary" /> : "Update blog"}
             </button>
           </div>
         </div>

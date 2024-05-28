@@ -11,69 +11,86 @@ import { useDisclosure } from "@mantine/hooks";
 
 import Link from "next/link";
 import { IoMdClose } from "react-icons/io";
+import { getBlog, deleteBlog } from "@/services/blogService";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { bloganityKey } from "@/constants";
 
 const Blog: FC<{ id: string }> = ({ id }) => {
   const [blog, setBlog] = useState<tBlog>({
     content: "",
     _id: "",
     author: "",
-    date: new Date(),
+    createdAt: "",
     title: "",
   });
-  const [loading, setLoading] = useState<boolean>(false);
-  const [success, setSuccess] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [success, setSuccess] = useState<boolean>(false);
 
   const [opened, { open, close }] = useDisclosure(false);
 
   useEffect(() => {
-    setBlog({
-      content: `
-          Lorem ipsum dolor sit amet, 
-          consectetur adipiscing elit, sed do eiusmod tempor incididunt ut 
-          labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
-          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute 
-          irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim 
-          id est laborum.\n
-          Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque 
-          laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto 
-          beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut 
-          odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. 
-          Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, 
-          sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat 
-          voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, 
-          nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate 
-          velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?\n
-          Lorem ipsum dolor sit amet, 
-          consectetur adipiscing elit, sed do eiusmod tempor incididunt ut 
-          labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
-          exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute 
-          irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim 
-          id est laborum.\n
-          Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque 
-          laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto 
-          beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut 
-          odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. 
-          Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, 
-          sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat 
-          voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, 
-          nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate 
-          velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
-          `,
-      title: "Testing 123",
-      date: new Date(),
-      author: "Alabi Tanimowo",
-      _id: "ID",
-    });
+    getBlog(
+      id,
+      (res) => {
+        setBlog(res.data.payload);
+        setSuccess(true);
+        setLoading(false);
+      },
+      (err) => {
+        toast.error(
+          "An error occurred while getting the blog. Please try again."
+        );
+        setLoading(false);
+        setSuccess(false);
+      }
+    );
   }, []);
 
-  function deleteBlog() {
+  function deleteThisBlog() {
+    let details = window.localStorage.getItem(bloganityKey);
+    if (details !== null) {
+      setLoading(true);
 
+      let token = JSON.parse(details).token;
+
+      deleteBlog(
+        blog._id,
+        token,
+        (res : any) => {
+          close();
+          window.location.replace("/blogs");
+        },
+        (err : any) => {
+          toast.error("An error occurred while trying to delete the blog");
+          setLoading(false);
+          setSuccess(false);
+          close();
+        }
+      );
+    } else {
+      toast.error("You need to be logged in to edit a blog");
+      return;
+    }
+
+    
   }
 
   return (
     <>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <div className="bg-tertiary w-[100vw] md:h-auto">
         <div className="md:fixed md:w-full md:bg-tertiary">
           <Navbar />
@@ -86,7 +103,7 @@ const Blog: FC<{ id: string }> = ({ id }) => {
               Written by {blog.author}
               {" on "}
               <span className="text-tertiary-1 font-bold">
-                {convertDate(blog.date)}
+                {convertDate(new Date(blog.createdAt))}
               </span>
             </p>
 
@@ -155,19 +172,19 @@ const Blog: FC<{ id: string }> = ({ id }) => {
                 Are you sure you want to delete this blog?
               </p>
               <div className="flex md:flex-col md:gap-5 w-full justify-between">
-              <button
-                onClick={close}
-                className="bg-primary w-[120px] md:w-full h-[50px] rounded text-white font-medium"
-              >
-                No
-              </button>
+                <button
+                  onClick={close}
+                  className="bg-primary w-[120px] md:w-full h-[50px] rounded text-white font-medium"
+                >
+                  No
+                </button>
 
-              <button
-                onClick={deleteBlog}
-                className="bg-secondary w-[120px] md:w-full h-[50px] rounded text-white font-medium"
-              >
-                Yes
-              </button>
+                <button
+                  onClick={deleteThisBlog}
+                  className="bg-secondary w-[120px] md:w-full h-[50px] rounded text-white font-medium"
+                >
+                  Yes
+                </button>
               </div>
             </div>
           </Modal.Body>

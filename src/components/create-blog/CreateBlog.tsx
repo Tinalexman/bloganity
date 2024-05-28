@@ -1,25 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../reusable/Navbar";
 import Footer from "../reusable/Footer";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { bloganityKey } from "@/constants";
+
+import { createBlog } from "@/services/blogService";
+import { Loader } from "@mantine/core";
 
 const CreateBlog = () => {
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [author, setAuthor] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  function createBlog() {
+  const onSuccess = (res: any) => {
+    toast.success("Yippee. Your blog has been created");
+    window.location.replace("/blogs");
+    setLoading(false);
+  };
+
+  const onError = (error: any) => {
+    toast.error("An error occurred while posting your blog. Please try again");
+    setLoading(false);
+  };
+
+  function create() {
     if (title.length === 0) {
       toast.error("You need to provide a title for your blog.");
-      return;
-    }
-
-    if (author.length === 0) {
-      toast.error("Won't you let us know who you are?");
       return;
     }
 
@@ -28,8 +39,34 @@ const CreateBlog = () => {
       return;
     }
 
-    
+    let details = window.localStorage.getItem(bloganityKey);
+    if (details !== null) {
+      setLoading(true);
+
+      let token = JSON.parse(details).token;
+
+      createBlog(
+        {
+          content: content,
+          title: title,
+        },
+        token,
+        onSuccess,
+        onError
+      );
+    } else {
+      toast.error("You need to be logged in to post a blog");
+      return;
+    }
   }
+
+  useEffect(() => {
+    let details: string | null = window.localStorage.getItem(bloganityKey);
+    if (details !== null) {
+      let detail = JSON.parse(details);
+      setAuthor(detail.name);
+    }
+  }, []);
 
   return (
     <>
@@ -74,6 +111,7 @@ const CreateBlog = () => {
               <input
                 type="text"
                 value={author}
+                readOnly={true}
                 placeholder="What's your name?"
                 className="w-full h-[50px] rounded border-2 border-tertiary-1 font-medium text-white  px-4 bg-tertiary"
                 onChange={(e) => setAuthor(e.target.value)}
@@ -89,10 +127,10 @@ const CreateBlog = () => {
               />
             </div>
             <button
-              onClick={createBlog}
+              onClick={create}
               className="bg-primary w-[150px] h-[50px] rounded text-white font-semibold shadow-custom-1"
             >
-              Post your blog
+              {loading ? <Loader color="primary" /> : "Post your blog"}
             </button>
           </div>
         </div>

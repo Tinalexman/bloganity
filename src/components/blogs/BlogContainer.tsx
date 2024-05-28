@@ -14,7 +14,7 @@ const BlogContainer: FC<iBlogProp> = ({ blog }) => {
           {blog.title}
         </h2>
         <p className="text-tertiary-1 text-md">
-          {convertDateWithJustSlashes(blog.date)}
+          {convertDateWithJustSlashes(new Date(blog.createdAt))}
         </p>
       </div>
       <p className="text-white font-medium text-md">{blog.content.substring(0, 80)}...</p>
