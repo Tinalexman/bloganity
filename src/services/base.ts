@@ -1,1 +1,1 @@
-export const baseUrl = "https://bloganity-backend.onrender.com";
+export const baseUrl = "https://bloganity-backend.onrender.com/api";
